@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Facebook Video Downloader</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:linear-gradient(135deg,#eaf2ff,#f8fbff);
+  color:#172554;
+}
+main{
+  width:90%;
+  max-width:450px;
+  margin:65px auto;
+  padding:28px 22px;
+  background:white;
+  border-radius:22px;
+  box-shadow:0 10px 35px #183b7020;
+  text-align:center;
+}
+.logo{
+  background:#1877f2;
+  color:white;
+  width:65px;
+  height:65px;
+  border-radius:18px;
+  display:grid;
+  place-items:center;
+  margin:auto;
+  font-size:38px;
+  font-weight:bold;
+}
+h1{font-size:25px;color:#1877f2}
+p{color:#64748b;line-height:1.6}
+input,button{
+  width:100%;
+  padding:15px;
+  margin-top:12px;
+  border-radius:10px;
+  font-size:15px;
+}
+input{border:1px solid #cbd5e1}
+button{
+  border:0;
+  background:#1877f2;
+  color:white;
+  font-weight:bold;
+}
+#message{overflow-wrap:anywhere;font-size:14px}
+footer{font-size:12px;color:#94a3b8;margin-top:24px}
+</style>
+</head>
+<body>
+<main>
+  <div class="logo">f</div>
+  <h1>Facebook Video Downloader</h1>
+  <p>Paste your Facebook video link below.</p>
+  <form id="form">
+    <input id="url" type="url"
+      placeholder="Paste Facebook video URL"
+      required>
+    <button type="submit">Get Video</button>
+  </form>
+  <p id="message">
+    Free and simple video link checker.
+  </p>
+  <footer>
+    Only use videos you own or have permission to download.
+  </footer>
+</main>
+<script>
+document.getElementById("form").addEventListener("submit",
+function(e){
+  e.preventDefault();
+  const input=document.getElementById("url").value.trim();
+  const message=document.getElementById("message");
+  try{
+    const u=new URL(input);
+    const domains=[
+      "facebook.com","www.facebook.com",
+      "m.facebook.com","web.facebook.com",
+      "fb.watch"
+    ];
+    if(u.protocol!=="https:" ||
+       !domains.includes(u.hostname)){
+      throw new Error("Invalid link");
+    }
+    message.textContent=
+      "Link accepted. Actual downloading requires an authorized video source.";
+  }catch(error){
+    message.textContent="Please enter a valid Facebook video link.";
+  }
+});
+</script>
+</body>
+</html>
