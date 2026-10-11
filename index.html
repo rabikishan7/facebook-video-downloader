@@ -14,87 +14,114 @@ body{
 }
 main{
   width:90%;
-  max-width:450px;
-  margin:65px auto;
-  padding:28px 22px;
-  background:white;
-  border-radius:22px;
-  box-shadow:0 10px 35px #183b7020;
-  text-align:center;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Facebook Video Downloader</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;padding:24px 12px;
+  font-family:Arial,sans-serif;
+  background:linear-gradient(135deg,#eaf2ff,#f8fbff);
+  color:#172554
+}
+main{
+  max-width:460px;margin:45px auto;
+  padding:26px 20px;background:white;
+  border-radius:22px;text-align:center;
+  box-shadow:0 10px 35px #183b7020
 }
 .logo{
-  background:#1877f2;
-  color:white;
-  width:65px;
-  height:65px;
-  border-radius:18px;
-  display:grid;
-  place-items:center;
-  margin:auto;
-  font-size:38px;
-  font-weight:bold;
+  width:64px;height:64px;margin:auto;
+  border-radius:18px;background:#1877f2;
+  color:white;font-size:42px;font-weight:bold;
+  display:grid;place-items:center
 }
 h1{font-size:25px;color:#1877f2}
-p{color:#64748b;line-height:1.6}
+p{line-height:1.6;color:#64748b}
 input,button{
-  width:100%;
-  padding:15px;
-  margin-top:12px;
-  border-radius:10px;
-  font-size:15px;
+  width:100%;padding:14px;margin-top:12px;
+  border-radius:10px;font-size:15px
 }
 input{border:1px solid #cbd5e1}
 button{
-  border:0;
-  background:#1877f2;
-  color:white;
-  font-weight:bold;
+  border:0;background:#1877f2;
+  color:white;font-weight:bold
 }
 #message{overflow-wrap:anywhere;font-size:14px}
-footer{font-size:12px;color:#94a3b8;margin-top:24px}
+small{color:#64748b}
 </style>
 </head>
 <body>
 <main>
   <div class="logo">f</div>
   <h1>Facebook Video Downloader</h1>
-  <p>Paste your Facebook video link below.</p>
-  <form id="form">
-    <input id="url" type="url"
-      placeholder="Paste Facebook video URL"
-      required>
-    <button type="submit">Get Video</button>
-  </form>
-  <p id="message">
-    Free and simple video link checker.
+  <p>Paste a direct MP4 video URL that you own
+     or have permission to download.</p>
+
+  <input id="url" type="url"
+    placeholder="https://example.com/video.mp4"
+    autocomplete="url">
+
+  <button id="download">Download Video</button>
+  <p id="message" role="status">
+    Ready to download your authorized video.
   </p>
-  <footer>
-    Only use videos you own or have permission to download.
-  </footer>
+  <small>Some video hosts block browser downloads.</small>
 </main>
+
 <script>
-document.getElementById("form").addEventListener("submit",
-function(e){
-  e.preventDefault();
-  const input=document.getElementById("url").value.trim();
-  const message=document.getElementById("message");
-  try{
-    const u=new URL(input);
-    const domains=[
-      "facebook.com","www.facebook.com",
-      "m.facebook.com","web.facebook.com",
-      "fb.watch"
-    ];
-    if(u.protocol!=="https:" ||
-       !domains.includes(u.hostname)){
-      throw new Error("Invalid link");
+const button = document.getElementById("download");
+const field = document.getElementById("url");
+const message = document.getElementById("message");
+
+button.addEventListener("click", async () => {
+  let videoURL;
+
+  try {
+    videoURL = new URL(field.value.trim());
+    if (videoURL.protocol !== "https:") {
+      throw new Error("Use a secure HTTPS URL.");
     }
-    message.textContent=
-      "Link accepted. Actual downloading requires an authorized video source.";
-  }catch(error){
-    message.textContent="Please enter a valid Facebook video link.";
+  } catch (e) {
+    message.textContent = "Please enter a valid HTTPS video URL.";
+    return;
+  }
+
+  button.disabled = true;
+  message.textContent = "Checking video access...";
+
+  try {
+    const response = await fetch(videoURL.href);
+    if (!response.ok) throw new Error("Video unavailable.");
+
+    const type = response.headers.get("content-type") || "";
+    if (!type.toLowerCase().includes("video/")) {
+      throw new Error("This URL did not return a video file.");
+    }
+
+    const blob = await response.blob();
+    const objectURL = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectURL;
+    link.download = "my-video.mp4";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    message.textContent = "Download started. Check your Downloads folder.";
+    setTimeout(() => URL.revokeObjectURL(objectURL), 60000);
+  } catch (e) {
+    message.textContent =
+      "Download blocked or unavailable. The video host must allow browser access (CORS). Try a direct video URL from a source you control.";
+  } finally {
+    button.disabled = false;
   }
 });
 </script>
 </body>
 </html>
+
